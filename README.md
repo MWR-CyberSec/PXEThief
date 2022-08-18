@@ -46,7 +46,7 @@ auto_exploit_blank_password = 1
 
 ### General settings
 
-* `sccm_base_url` is useful for overriding the Management Point that the tooling will speak to. This is useful if DNS does not resolve (so the value read from the media variables file cannot be used) or if you have identified multiple Management Points and want to send your traffic to a specific one. This should be provided in the form of a base URL e.g. 
+* `sccm_base_url` is useful for overriding the Management Point that the tooling will speak to. This is useful if DNS does not resolve (so the value read from the media variables file cannot be used) or if you have identified multiple Management Points and want to send your traffic to a specific one. This should be provided in the form of a base URL e.g. `http://mp.configmgr.com` instead of `mp.configmgr.com` or `http://mp.configmgr.com/stuff`.
 * `auto_exploit_blank_password` changes the behaviour of `pxethief 1` to automatically attempt to exploit a non-password protected PXE Distribution Point. Setting this to `1` will enable auto exploitation, while setting it to `0` will print the tftp client string you should use to download the media variables file. Note that almost all of the time you will want this set to `1`, since non-password protected PXE makes use of a binary key that is sent in the DHCP response that you receive when you ask the Distribution Point to perform a PXE boot. 
 
 ### HTTP Connection Settings 
@@ -71,6 +71,10 @@ Linux support - PXEThief currently uses `pywin32` in order to utilise some built
 ## Proof of Concept note
 
 Expect to run into issues with error handling with this tool; there are subtle nuances with everything in ConfigMgr and while I have improved the error handling substantially in preparation for the release, this is in no way complete. If there are edge cases that fail, make a detailed issue or fix it and make a pull request :) I'll review these to see where reasonable improvements can be made. Read the code/watch the talk and understand what is going on if you are going to run it in a production environment. Keep in mind the licensing terms - i.e. use of the tool is at your own risk.
+
+## Related work
+
+[Identifying and retrieving credentials from SCCM/MECM Task Sequences](https://www.mwrcybersec.com/research_items/identifying-and-retrieving-credentials-from-sccm-mecm-task-sequences) - The references in this post are very useful in getting an understanding of where offensive SCCM research is going at the moment 
 
 ## Author Credit 
 
