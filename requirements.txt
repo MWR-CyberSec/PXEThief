@@ -1,0 +1,6 @@
+scapy>=2.4.5
+requests>=2.27.1
+requests-toolbelt>=0.9.1
+pywin32>=303
+pycryptodome>=3.14.1
+lxml>=4.9.1
