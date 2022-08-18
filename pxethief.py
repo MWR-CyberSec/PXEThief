@@ -850,7 +850,7 @@ if __name__ == "__main__":
         print("[+] Attempting to decrypt media variables file and retrieve policies and passwords from MECM Server...")
 
         if not (len(sys.argv) == 4 or len(sys.argv) == 3): 
-            print("Usage:   %s 4 <variables-file-name> <Password-guess>" % sys.argv[0])
+            print("Usage:   %s 3 <variables-file-name> <Password-guess>" % sys.argv[0])
             sys.exit(0)
         
         if len(sys.argv) == 3:
@@ -867,7 +867,7 @@ if __name__ == "__main__":
         print("[+] Attempting to decrypt encrypted media variables file and policy from stand-alone media...")
 
         if not (len(sys.argv) == 4 or len(sys.argv) == 5):
-            print("Usage:   %s 5 <variables-file-name> <policy-file-path> <password>" % sys.argv[0])
+            print("Usage:   %s 4 <variables-file-name> <policy-file-path> <password>" % sys.argv[0])
             sys.exit(0)
 
         if len(sys.argv) == 4:
