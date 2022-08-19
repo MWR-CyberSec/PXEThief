@@ -1,6 +1,6 @@
 # PXEThief
 
-PXEThief is a set of tooling that implements attack paths discussed at the DEF CON 30 talk _Pulling Passwords out of Configuration Manager_ (https://forum.defcon.org/node/241925) against the Operating System Deployment functionality in Microsoft Endpoint Configuration Manager (or ConfigMgr, still commonly known as SCCM). It allows for credential gathering from configured Network Access Accounts [https://docs.microsoft.com/en-us/mem/configmgr/core/plan-design/hierarchy/accounts#network-access-account](https://docs.microsoft.com/en-us/mem/configmgr/core/plan-design/hierarchy/accounts#network-access-account) and any Task Sequence Accounts or credentials stored within ConfigMgr Collection Variables that have been configured for the "All Unknown Computers" collection. These Active Directory accounts are commonly over permissioned and allow for privilege escalation to administrative access. 
+PXEThief is a set of tooling that implements attack paths discussed at the DEF CON 30 talk _Pulling Passwords out of Configuration Manager_ (https://forum.defcon.org/node/241925) against the Operating System Deployment functionality in Microsoft Endpoint Configuration Manager (or ConfigMgr, still commonly known as SCCM). It allows for credential gathering from configured Network Access Accounts ([https://docs.microsoft.com/en-us/mem/configmgr/core/plan-design/hierarchy/accounts#network-access-account](https://docs.microsoft.com/en-us/mem/configmgr/core/plan-design/hierarchy/accounts#network-access-account)) and any Task Sequence Accounts or credentials stored within ConfigMgr Collection Variables that have been configured for the "All Unknown Computers" collection. These Active Directory accounts are commonly over permissioned and allow for privilege escalation to administrative access somewhere in the domain. 
 
 Likely, the most serious attack that can be executed with this tooling would involve PXE-initiated deployment being supported for "All unknown computers" on a distribution point without a password, or with a weak password. The overpermissioning of ConfigMgr accounts exposed to OSD mentioned earlier can then allow for a full Active Directory attack chain to be executed with only network access to the target environment. 
 
@@ -41,7 +41,7 @@ auto_exploit_blank_password = 1
 
 ### Scapy settings
 
-* `automatic_interface_selection_mode` will attempt to determine the best interface for Scapy to use automatically for convenience. It does this using two main techniques. If set to '1' it will attempt to use the interface that can reach the machine's default GW as output interface. If set to '2', it will look for the first interface that it finds that has an IP address that is not an autoconfigure or localhost IP address. This will fail to select the appropriate interface in some scenarios, which is why you can force the use of a specific inteface with 'manual_interface_selection_by_id'. 
+* `automatic_interface_selection_mode` will attempt to determine the best interface for Scapy to use automatically, for convenience. It does this using two main techniques. If set to '1' it will attempt to use the interface that can reach the machine's default GW as output interface. If set to '2', it will look for the first interface that it finds that has an IP address that is not an autoconfigure or localhost IP address. This will fail to select the appropriate interface in some scenarios, which is why you can force the use of a specific inteface with 'manual_interface_selection_by_id'. 
 * `manual_interface_selection_by_id` allows you to specify the integer index of the interface you want Scapy to use. The ID to use in this file should be obtained from running `pxethief.py 10`.
 
 ### General settings
@@ -64,17 +64,17 @@ Not implemented in this release
 
 ## Limitations
 
-Proxy support for HTTP requests - Currently only configurable in code. Proxy support can be enabled on line 35 and the address of the proxy set on line 693 of `pxethief.py`. Planning to move this to 'settings.ini' in the next update to the code base
-HTTPS and mutual TLS support - Not implemented at the moment. Can use an intercepting proxy to handle this though, which works well in my experience; to do this, you will need to configure a proxy as mentioned above 
-Linux support - PXEThief currently uses `pywin32` in order to utilise some built-in Windows cryptography functions. This is not available on Linux, since the Windows API is not available on Linux :P The Scapy code, however, is fully functional on Linux, but you will need to patch out (at least) the include of `win32crypt` to get this to run
+* Proxy support for HTTP requests - Currently only configurable in code. Proxy support can be enabled on line 35 of `pxethief.py` and the address of the proxy can be set on line 693 of `pxethief.py`. I am planning to move this to 'settings.ini' in the next update to the code base
+* HTTPS and mutual TLS support - Not implemented at the moment. Can use an intercepting proxy to handle this though, which works well in my experience; to do this, you will need to configure a proxy as mentioned above 
+* Linux support - PXEThief currently makes use of `pywin32` in order to utilise some built-in Windows cryptography functions. This is not available on Linux, since the Windows cryptogrphy APIs are not available on Linux :P The Scapy code in `pxethief.py`, however, is fully functional on Linux, but you will need to patch out (at least) the include of `win32crypt` to get it to run under Linux
 
 ## Proof of Concept note
 
-Expect to run into issues with error handling with this tool; there are subtle nuances with everything in ConfigMgr and while I have improved the error handling substantially in preparation for the release, this is in no way complete. If there are edge cases that fail, make a detailed issue or fix it and make a pull request :) I'll review these to see where reasonable improvements can be made. Read the code/watch the talk and understand what is going on if you are going to run it in a production environment. Keep in mind the licensing terms - i.e. use of the tool is at your own risk.
+Expect to run into issues with error handling with this tool; there are subtle nuances with everything in ConfigMgr and while I have improved the error handling substantially in preparation for the tool's release, this is in no way complete. If there are edge cases that fail, make a detailed issue or fix it and make a pull request :) I'll review these to see where reasonable improvements can be made. Read the code/watch the talk and understand what is going on if you are going to run it in a production environment. Keep in mind the licensing terms - i.e. use of the tool is at your own risk.
 
 ## Related work
 
-[Identifying and retrieving credentials from SCCM/MECM Task Sequences](https://www.mwrcybersec.com/research_items/identifying-and-retrieving-credentials-from-sccm-mecm-task-sequences) - The references in this post are very useful in getting an understanding of where offensive SCCM research is going at the moment 
+[Identifying and retrieving credentials from SCCM/MECM Task Sequences](https://www.mwrcybersec.com/research_items/identifying-and-retrieving-credentials-from-sccm-mecm-task-sequences) - In this post, I explain the entire flow of how ConfigMgr policies are found, downloaded and decrypted after a valid OSD certificate is obtained. I also want to highlight the first two references in this post as they show very interesting offensive SCCM research that is ongoing at the moment.
 
 ## Author Credit 
 
