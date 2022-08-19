@@ -41,7 +41,7 @@ auto_exploit_blank_password = 1
 
 ### Scapy settings
 
-* `automatic_interface_selection_mode` will attempt to determine the best interface for Scapy to use automatically, for convenience. It does this using two main techniques. If set to '1' it will attempt to use the interface that can reach the machine's default GW as output interface. If set to '2', it will look for the first interface that it finds that has an IP address that is not an autoconfigure or localhost IP address. This will fail to select the appropriate interface in some scenarios, which is why you can force the use of a specific inteface with 'manual_interface_selection_by_id'. 
+* `automatic_interface_selection_mode` will attempt to determine the best interface for Scapy to use automatically, for convenience. It does this using two main techniques. If set to `1` it will attempt to use the interface that can reach the machine's default GW as output interface. If set to `2`, it will look for the first interface that it finds that has an IP address that is not an autoconfigure or localhost IP address. This will fail to select the appropriate interface in some scenarios, which is why you can force the use of a specific inteface with 'manual_interface_selection_by_id'. 
 * `manual_interface_selection_by_id` allows you to specify the integer index of the interface you want Scapy to use. The ID to use in this file should be obtained from running `pxethief.py 10`.
 
 ### General settings
