@@ -75,6 +75,7 @@ Expect to run into issues with error handling with this tool; there are subtle n
 ## Related work
 
 [Identifying and retrieving credentials from SCCM/MECM Task Sequences](https://www.mwrcybersec.com/research_items/identifying-and-retrieving-credentials-from-sccm-mecm-task-sequences) - In this post, I explain the entire flow of how ConfigMgr policies are found, downloaded and decrypted after a valid OSD certificate is obtained. I also want to highlight the first two references in this post as they show very interesting offensive SCCM research that is ongoing at the moment.
+[DEF CON 30 Slides](https://media.defcon.org/DEF%20CON%2030/DEF%20CON%2030%20presentations/Christopher%20Panayi%20-%20Pulling%20Passwords%20out%20of%20Configuration%20Manager%20Practical%20Attacks%20against%20Microsofts%20Endpoint%20Management%20Software.pdf) - Link to the talk slides
 
 ## Author Credit 
 
