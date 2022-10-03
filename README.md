@@ -66,7 +66,7 @@ Not implemented in this release
 
 * Proxy support for HTTP requests - Currently only configurable in code. Proxy support can be enabled on line 35 of `pxethief.py` and the address of the proxy can be set on line 693. I am planning to move this feature to be configurable in 'settings.ini' in the next update to the code base
 * HTTPS and mutual TLS support - Not implemented at the moment. Can use an intercepting proxy to handle this though, which works well in my experience; to do this, you will need to configure a proxy as mentioned above 
-* Linux support - PXEThief currently makes use of `pywin32` in order to utilise some built-in Windows cryptography functions. This is not available on Linux, since the Windows cryptogrphy APIs are not available on Linux :P The Scapy code in `pxethief.py`, however, is fully functional on Linux, but you will need to patch out (at least) the include of `win32crypt` to get it to run under Linux
+* Linux support - PXEThief currently makes use of `pywin32` in order to utilise some built-in Windows cryptography functions. This is not available on Linux, since the Windows cryptography APIs are not available on Linux :P The Scapy code in `pxethief.py`, however, is fully functional on Linux, but you will need to patch out (at least) the include of `win32crypt` to get it to run under Linux
 
 ## Proof of Concept note
 
