@@ -190,11 +190,7 @@ def find_pxe_server():
         print("[-] No DHCP responses received with PXE boot options") 
         sys.exit(-1)
     
-    try:
-        tftp_server = validate_ip_or_resolve_hostname(tftp_server.strip())
-    except AttributeError:
-        print("No PXE Boot Server Found - If you are using a VM, make sure your network adapter is bridged")
-        sys.exit(-1)
+    tftp_server = validate_ip_or_resolve_hostname(tftp_server.strip())
 
     print("")
     print("PXE Server IP: " + tftp_server + " Boot File Location: " + boot_file)
