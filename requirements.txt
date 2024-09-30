@@ -4,3 +4,4 @@ requests-toolbelt>=0.9.1
 pywin32>=303
 pycryptodome>=3.14.1
 lxml>=4.9.1
+cryptography>=43.0.1
