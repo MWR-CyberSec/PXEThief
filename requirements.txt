@@ -1,4 +1,4 @@
-scapy>=2.4.5
+scapy==2.5.0
 requests>=2.27.1
 requests-toolbelt>=0.9.1
 pywin32>=303
