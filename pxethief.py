@@ -152,7 +152,7 @@ def configure_scapy_networking(ip_address):
     global clientMacAddress
 
     clientIPAddress = get_if_addr(conf.iface)
-    fam,clientMacAddress = get_if_raw_hwaddr(conf.iface)
+    clientMacAddress = get_if_hwaddr(conf.iface)
 
     bind_layers(UDP,BOOTP,dport=4011,sport=68) # Make Scapy aware that, indeed, DHCP traffic *can* come from source or destination port udp/4011 - the additional port used by MECM
     bind_layers(UDP,BOOTP,dport=68,sport=4011)
