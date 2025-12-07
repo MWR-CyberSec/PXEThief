@@ -1,0 +1,31 @@
+[project]
+name = "pxethief"
+version = "1.0.0"
+description = "PXEThief is a set of tooling that can extract passwords from the Operating System Deployment functionality in Microsoft Endpoint Configuration Manager "
+authors = [
+    {name = "MWR CyberSec"}
+]
+readme = "README.md"
+requires-python = ">=3.7,<4"
+dependencies = [
+    "scapy (>=2.4.5)",
+    "requests (>=2.27.1)",
+    "requests-toolbelt (>=0.9.1)",
+    "pycryptodome (>=3.14.1)",
+    "lxml (>=4.9.1)"
+]
+  
+[tool.poetry.dependencies.pywin32]
+version = ">=303"
+markers = "sys_platform == 'win32'"
+
+[tool.poetry]
+packages = [{include = "pxethief", from = "src"}]
+
+[tool.poetry.scripts]
+pxethief = 'pxethief.pxethief:main'
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

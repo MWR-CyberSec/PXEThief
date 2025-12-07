@@ -53,7 +53,7 @@ auto_exploit_blank_password = 1
 
 Not implemented in this release
 
-## Setup Instructions
+## Instructions (Windows)
 
 1. Create a new Windows VM
 2. Install Python (From https://www.python.org/ or through the store, both should work fine)
@@ -61,6 +61,11 @@ Not implemented in this release
 4. Install Npcap (https://npcap.com/#download) (or Wireshark, which comes bundled with it) for Scapy 
 5. Bridge the VM to the network running a ConfigMgr Distribution Point set up for PXE/OSD
 6. If using `pxethief.py 1` or `pxethief.py 2` to identify and generate a media variables file, make sure the interface used by the tool is set to the correct one, if it is not correct, manually set it in 'settings.ini' by identifying the right index ID to use from `pxethief.py 10`
+
+## Instructions (Linux)
+1. Install `pipx`
+2. Run `pipx install git+https://raw.githubusercontent.com/MWR-CyberSec/PXEThief`
+3. Use the `pxethief` command.
 
 ## Limitations
 
@@ -81,3 +86,4 @@ Expect to run into issues with error handling with this tool; there are subtle n
 ## Author Credit 
 
 Copyright (C) 2022 Christopher Panayi, MWR CyberSec
+
