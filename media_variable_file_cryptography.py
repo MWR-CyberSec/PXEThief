@@ -41,31 +41,50 @@ def aes_des_key_derivation(password):
     
     return b0_sha1 + b1_sha1
 
-def aes128_decrypt(data,key):
+def aes128_decrypt(data,key,iv=b"\x00"*16):
 
-    aes128 = AES.new(key, AES.MODE_CBC, b"\x00"*16)
+    aes128 = AES.new(key, AES.MODE_CBC, iv)
     decrypted = aes128.decrypt(data)
     return decrypted.decode("utf-16-le")
 
-def aes128_decrypt_raw(data,key):
+def aes128_decrypt_raw(data,key,iv=b"\x00"*16):
 
-    aes128 = AES.new(key, AES.MODE_CBC, b"\x00"*16)
+    aes128 = AES.new(key, AES.MODE_CBC, iv)
     decrypted = aes128.decrypt(data)
     return decrypted
 
-def _3des_decrypt(data,key):
+def aes256_decrypt(data,key,iv=b"\x00"*16):
 
-    _3des = DES3.new(key, DES3.MODE_CBC, b"\x00"*8)
+    aes256 = AES.new(key, AES.MODE_CBC, iv)
+    decrypted = aes256.decrypt(data)
+    return decrypted.decode("utf-16-le")
+
+def aes256_decrypt_raw(data,key,iv=b"\x00"*16):
+
+    aes256 = AES.new(key, AES.MODE_CBC, iv)
+    decrypted = aes256.decrypt(data)
+    return decrypted
+
+def _3des_decrypt(data,key,iv=b"\x00"*8):
+
+    _3des = DES3.new(key, DES3.MODE_CBC, iv)
     decrypted = _3des.decrypt(data)
     return decrypted.decode("utf-16-le")
 
-def _3des_decrypt_raw(data,key):
+def _3des_decrypt_raw(data,key,iv=b"\x00"*8):
 
-    _3des = DES3.new(key, DES3.MODE_CBC, b"\x00"*8)
+    _3des = DES3.new(key, DES3.MODE_CBC, iv)
     decrypted = _3des.decrypt(data)
     return decrypted
 
 def read_media_variable_file_header(filename):
     media_file = open(filename,'rb')
-    media_data = media_file.read(40)
-    return media_data
+    media_data = media_file.read(40).hex()
+    hash_type = ""
+    if media_data[32:36] == "0e66":
+        hash_type = "aes128$"
+    if media_data[32:36] == "1066":
+        hash_type = "aes256$"
+    if media_data[32:36] == "0366":
+        hash_type = "3des..$"
+    return hash_type + media_data

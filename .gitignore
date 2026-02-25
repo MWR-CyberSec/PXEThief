@@ -1,0 +1,5 @@
+*.bcd
+*.var
+*.pfx
+output.crt
+output-key.key
