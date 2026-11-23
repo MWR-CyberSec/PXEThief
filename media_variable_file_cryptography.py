@@ -69,3 +69,11 @@ def read_media_variable_file_header(filename):
     media_file = open(filename,'rb')
     media_data = media_file.read(40)
     return media_data
+
+# ALG_ID (header bytes 16..19, little endian) -> (hashcat label, AES key length)
+MEDIA_FILE_ALGORITHMS = {0x660E: ("aes128", 16), 0x6610: ("aes256", 32)}
+
+def read_media_variable_file_algorithm(filename):
+    header = read_media_variable_file_header(filename)
+    alg_id = int.from_bytes(header[16:20],"little")
+    return alg_id, MEDIA_FILE_ALGORITHMS.get(alg_id)
