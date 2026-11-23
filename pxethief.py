@@ -377,7 +377,9 @@ def decrypt_media_file(path, password):
         else:
             key = media_crypto.aes_des_key_derivation(password)
         last_16 = math.floor(len(encrypted_file)/16)*16
-        decrypted_media_file = media_crypto.aes128_decrypt(encrypted_file[:last_16],key[:16])
+        # AES-128 uses the first 16 bytes of the derived key, AES-256 the first 32
+        key_length = (media_crypto.read_media_variable_file_algorithm(path)[1] or (None,16))[1]
+        decrypted_media_file = media_crypto.aes128_decrypt(encrypted_file[:last_16],key[:key_length])
         decrypted_media_file =  decrypted_media_file[:decrypted_media_file.rfind('\x00')]
         wf_decrypted_ts = "".join(c for c in decrypted_media_file if c.isprintable())
         print("[+] Successfully decrypted media variables file with the provided password!")
@@ -925,7 +927,11 @@ if __name__ == "__main__":
             #print(decrypt_media_file(path,password))
             process_full_media(password,policy_file)
     elif int(sys.argv[1]) == 5:
-        print("Hashcat hash: " + "$sccm$aes128$" + media_crypto.read_media_variable_file_header(sys.argv[2]).hex())
+        alg_id, algorithm = media_crypto.read_media_variable_file_algorithm(sys.argv[2])
+        if algorithm is None:
+            print("[-] Unsupported media variables file algorithm ID 0x%04x, no hashcat mode available for it" % alg_id)
+            sys.exit(-1)
+        print("Hashcat hash: " + "$sccm$" + algorithm[0] + "$" + media_crypto.read_media_variable_file_header(sys.argv[2]).hex())
 
     elif int(sys.argv[1]) == 6:
         print("[+] Using MECM PXE Certificate registry key values to retrieve task sequences")
